@@ -1,9 +1,13 @@
 'use strict';
 
 module.exports = {
-  development: {},
+  development: {
+    'postgres://localhost/bookshelf_dev'
+  },
 
-  test: {},
+  test: {
+    'postgres://localhost/bookshelf_test'
+  },
 
   production: {}
 };
