@@ -53,10 +53,85 @@ router.post('/books', (req, res, next) => {
     .insert(decamelizeKeys(insertBook), '*')
     .then((rows) => {
       const book = camelizeKeys(rows[0]);
+
       res.send(book);
     })
     .catch((err) => {
       next(err);
     });
 });
+
+router.patch('/books/:id', (req, res, next) => {
+  knex('books')
+    .where('id', req.params.id)
+    .first()
+    .then((track) => {
+      if (!track) {
+        throw boom.create(404, 'Not Found');
+      }
+
+      const { title, author, genre, description, coverUrl } = req.body;
+      const updateBook = {};
+
+      if (title) {
+        updateBook.title = title;
+      }
+
+      if (author) {
+        updateBook.author = author;
+      }
+
+      if (genre) {
+        updateBook.genre = genre;
+      }
+
+      if (description) {
+        updateBook.description = description;
+      }
+
+      if (coverUrl) {
+        updateBook.coverUrl = coverUrl;
+      }
+
+      return knex('books')
+        .update(decamelizeKeys(updateBook), '*')
+        .where('id', req.params.id);
+    })
+    .then((rows) => {
+      const book = camelizeKeys(rows[0]);
+
+      res.send(book);
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
+
+router.delete('/books/:id', (req, res, next) => {
+  let book;
+
+  knex('books')
+    .where('id', req.params.id)
+    .first()
+    .then((row) => {
+      if (!row) {
+        throw boom.create(404, 'Not Found');
+      }
+
+      book = camelizeKeys(row);
+
+      return knex('books')
+        .del()
+        .where('id', req.params.id);
+    })
+    .then(() => {
+      delete book.id;
+
+      res.send(book);
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
+
 module.exports = router;
