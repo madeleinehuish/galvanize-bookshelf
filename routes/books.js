@@ -1,15 +1,18 @@
 'use strict';
+
+// eslint-disable-next-line new-cap
 const boom = require('boom');
 const express = require('express');
 const knex = require('../knex');
 const { camelizeKeys, decamelizeKeys } = require('humps');
-// eslint-disable-next-line new-cap
 const router = express.Router();
+
 router.get('/books', (_req, res, next) => {
   knex('books')
     .orderBy('title')
     .then((rows) => {
       const books = camelizeKeys(rows);
+
       res.send(books);
     })
     .catch((err) => {
@@ -17,6 +20,9 @@ router.get('/books', (_req, res, next) => {
     });
 });
 router.get('/books/:id', (req, res, next) => {
+  if (isNaN(req.params.id)) {
+    return next(boom.create(404, 'Not Found'));
+  }
   knex('books')
     .where('id', req.params.id)
     .first()
@@ -25,14 +31,17 @@ router.get('/books/:id', (req, res, next) => {
         throw boom.create(404, 'Not Found');
       }
       const book = camelizeKeys(row);
+
       res.send(book);
     })
     .catch((err) => {
       next(err);
     });
 });
+
 router.post('/books', (req, res, next) => {
   const { title, author, genre, description, coverUrl } = req.body;
+
   if (!title || !title.trim()) {
     return next(boom.create(400, 'Title must not be blank'));
   }
@@ -46,9 +55,10 @@ router.post('/books', (req, res, next) => {
     return next(boom.create(400, 'Description must not be blank'));
   }
   if (!coverUrl || !coverUrl.trim()) {
-    return next(boom.create(400, 'CoverUrl must not be blank'));
+    return next(boom.create(400, 'Cover URL must not be blank'));
   }
   const insertBook = { title, author, genre, description, coverUrl };
+
   knex('books')
     .insert(decamelizeKeys(insertBook), '*')
     .then((rows) => {
@@ -62,6 +72,9 @@ router.post('/books', (req, res, next) => {
 });
 
 router.patch('/books/:id', (req, res, next) => {
+  if (isNaN(req.params.id)) {
+    return next(boom.create(404, 'Not Found'));
+  }
   knex('books')
     .where('id', req.params.id)
     .first()
@@ -110,6 +123,9 @@ router.patch('/books/:id', (req, res, next) => {
 router.delete('/books/:id', (req, res, next) => {
   let book;
 
+  if (isNaN(req.params.id)) {
+    return next(boom.create(404, 'Not Found'));
+  }
   knex('books')
     .where('id', req.params.id)
     .first()
