@@ -3,5 +3,10 @@ module.exports = {
     'ryansobol/es6',
     'ryansobol/mocha',
     'ryansobol/node'
-  ]
+  ],
+  rules: {
+    'max-len': 'off',
+    'camelcase': 'off',
+    'new-cap': 'off'
+  }
 };

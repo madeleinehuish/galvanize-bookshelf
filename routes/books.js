@@ -21,7 +21,6 @@ router.get('/books', (_req, res, next) => {
 });
 
 router.get('/books/:id', (req, res, next) => {
-
   if (isNaN(req.params.id)) {
     return next(boom.create(404, 'Not Found'));
   }
