@@ -2,9 +2,12 @@
 
 exports.up = function(knex) {
   return knex.schema.createTable('users', (table) => {
-    table.specificType('hashed_password', 'char(60)')
-      .notNullable()
-      .defaultTo('$2a$12$Z7JfPVG4qJIIBZCFjZ.VROwEJRm9Gd3c3S1VqhfJDHmZAEdxY5uRC');
+    table.increments();
+    table.string('first_name').notNullable().defaultTo('');
+    table.string('last_name').notNullable().defaultTo('');
+    table.string('email').notNullable().unique();
+    table.specificType('hashed_password', 'char(60)').notNullable();
+    table.timestamps(true, true);
   });
 };
 
