@@ -13,8 +13,9 @@ router.get('/token', (req, res, next) => {
   jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       res.send(false);
+      return;
     }
-      res.send();
+      res.send(true);
     });
   })
 
