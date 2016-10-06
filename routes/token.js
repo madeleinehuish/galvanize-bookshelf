@@ -9,6 +9,15 @@ const { camelizeKeys, decamelizeKeys } = require('humps');
 
 const router = express.Router();
 
+router.get('/token', (req, res, next) => {
+  jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      res.send(false);
+    }
+      res.send();
+    });
+  })
+
 router.post('/token', (req, res, next) => {
   const { email, password } = req.body;
 
