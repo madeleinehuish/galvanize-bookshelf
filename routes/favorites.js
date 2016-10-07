@@ -26,7 +26,7 @@ router.get('/favorites', authorize, (req, res, next) => {
 
   knex('favorites')
     .innerJoin('books', 'books.id', 'favorites.book_id')
-    .where('favorites.user_id', sub)
+    .where('favorites.user_id', userId)
     .orderBy('books.title', 'ASC')
     .then((rows) => {
       const favorites = camelizeKeys(rows);
