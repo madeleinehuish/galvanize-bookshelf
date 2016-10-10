@@ -16,10 +16,17 @@ const authorize = function(req, res, next) {
     }
 
     req.token = decoded;
-    // You can now access the payload via req.token.userId
+
     next();
   });
 };
+
+router.get('/favorites/:id', authorize, (req, res, next) => {
+  knex('favorites')
+    .where('book_id', req.query.bookId)
+    .then((favorites) => res.send(favorites.length > 0))
+    .catch((err) => next(err));
+});
 
 router.get('/favorites', authorize, (req, res, next) => {
   const { userId } = req.token;
@@ -36,6 +43,44 @@ router.get('/favorites', authorize, (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+
+  router.post('/favorites', authorize, (req, res, next) => {
+    const { userId } =req.token;
+    const { bookId } = req.body;
+
+  });
+
+  router.delete('/favorites', authorize, (req, res, next) => {
+
+    let favorite;
+    const { userId } = req.token;
+    const { bookId } = req.body;
+
+   if (typeof bookId !== 'number') {
+      return next(boom.create(400, 'Id must be an integer'));
+    }
+
+  knex('favorites')
+    .where({ book_id: bookId, user_id: userId })
+    .first()
+    .then((row) => {
+      if (!row) {
+        throw boom.create(404, 'Not Found');
+      }
+
+      favorite = camelizeKeys(row);
+      return knex('favorites')
+        .where({ book_id: bookId, user_id: userId })
+        .del()
+          })
+        .then(() => {
+      delete favorite.id;
+      res.send(favorite);
+      })
+    .catch((err) => {
+      next(err);
+    });
+  });
 });
 
 module.exports = router;
