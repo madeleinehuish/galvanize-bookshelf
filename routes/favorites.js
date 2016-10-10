@@ -21,12 +21,7 @@ const authorize = function(req, res, next) {
   });
 };
 
-router.get('/favorites/:id', authorize, (req, res, next) => {
-  knex('favorites')
-    .where('book_id', req.query.bookId)
-    .then((favorites) => res.send(favorites.length > 0))
-    .catch((err) => next(err));
-});
+
 
 router.get('/favorites', authorize, (req, res, next) => {
   const { userId } = req.token;
@@ -44,39 +39,68 @@ router.get('/favorites', authorize, (req, res, next) => {
       next(err);
     });
 
-  router.post('/favorites', authorize, (req, res, next) => {
-    const { userId } =req.token;
-    const { bookId } = req.body;
+router.get('/favorites/:id', authorize, (req, res, next) => {
+  knex('favorites')
+    .where('book_id', req.query.bookId)
+    .then((favorites) => res.send(favorites.length > 0))
+    .catch((err) => next(err));
+});
 
-  });
+router.post('/favorites', authorize, (req, res, next) => {
+  const { userId } =req.token;
+  const { bookId } = req.body;
 
-  router.delete('/favorites', authorize, (req, res, next) => {
+  if (!userId) {
+ return next(boom.create(400, ''));
+ }
 
-    let favorite;
-    const { userId } = req.token;
-    const { bookId } = req.body;
+ if (!bookId) {
+   return next(boom.create(400, ''));
+ }
 
-   if (typeof bookId !== 'number') {
-      return next(boom.create(400, 'Id must be an integer'));
-    }
+ const insertFavorite = { userId, bookId };
+
+ knex('favorites')
+   .insert(decamelizeKeys(insertFavorite), '*')
+   .then((rows) => {
+     const favorite = camelizeKeys(rows[0]);
+
+     res.send(favorite);
+   })
+   .catch((err) => {
+     next(err);
+   });
+
+});
+
+router.delete('/favorites', authorize, (req, res, next) => {
+  const { userId } =req.token;
+  const { bookId } = req.body;
+
+  let favorite;
+
+  if (isNaN(bookId)){
+    return next(boom.create(400, 'Book ID must be an Integer'));
+  }
 
   knex('favorites')
-    .where({ book_id: bookId, user_id: userId })
+    .where({'book_id': bookId, 'user_id': userId})
     .first()
     .then((row) => {
-      if (!row) {
+      if(!row) {
         throw boom.create(404, 'Not Found');
       }
 
       favorite = camelizeKeys(row);
+
       return knex('favorites')
-        .where({ book_id: bookId, user_id: userId })
         .del()
-          })
-        .then(() => {
+        .where({'book_id': bookId, 'user_id': userId});
+    })
+    .then(() => {
       delete favorite.id;
       res.send(favorite);
-      })
+    })
     .catch((err) => {
       next(err);
     });
