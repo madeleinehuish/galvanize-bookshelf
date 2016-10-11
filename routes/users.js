@@ -32,7 +32,7 @@ router.post('/users', (req, res, next) => {
     .where('email', email)
     .first()
     .then((result) => {
-      if(result) {
+      if (result) {
         return next(boom.create(400, 'Email already exists'));
       }
 
@@ -52,7 +52,7 @@ router.post('/users', (req, res, next) => {
         .catch((err) => {
           next(err);
         });
-      });
+    });
 });
 
 module.exports = router;

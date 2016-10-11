@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt-as-promised');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const knex = require('../knex');
-const { camelizeKeys, decamelizeKeys } = require('humps');
+const { camelizeKeys } = require('humps');
 
 const router = express.Router();
 
@@ -13,11 +13,12 @@ router.get('/token', (req, res, next) => {
   jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       res.send(false);
+
       return;
     }
-      res.send(true);
-    });
-  })
+    res.send(true);
+  });
+});
 
 router.post('/token', (req, res, next) => {
   const { email, password } = req.body;
@@ -46,7 +47,8 @@ router.post('/token', (req, res, next) => {
     })
     .then(() => {
       delete user.hashedPassword;
-      //user is authenticated
+
+      // user is authenticated
       const expiry = new Date(Date.now() + 1000 * 60 * 60 * 3); // 3 hours
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
         expiresIn: '3h'
